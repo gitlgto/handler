@@ -100,6 +100,7 @@ public class Mem {
         }
         //coinIn实体类
         registerShutdownHook();
+        //未完待续
 
         return Instance;
     }
