@@ -7,6 +7,11 @@ import com.nzxpc.handler.mem.core.entity.DefaultEventModel;
 import com.nzxpc.handler.mem.core.entity.Event;
 import com.nzxpc.handler.mem.core.entity.EventModelBase;
 import com.nzxpc.handler.mem.core.entity.Result;
+import com.nzxpc.handler.mem.core.handler.EndHandler;
+import com.nzxpc.handler.mem.core.handler.EventToDbHandler;
+import com.nzxpc.handler.mem.core.handler.HaltHandler;
+import com.nzxpc.handler.mem.core.util.ReflectUtil;
+import com.nzxpc.handler.mem.core.util.StopWatch;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,6 +34,7 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Getter
@@ -102,7 +108,115 @@ public class Mem {
         registerShutdownHook();
         //未完待续
 
+        initMap();
+        loadSnapAndEvent(DataContainerClass, iCache);
+
         return Instance;
+    }
+
+    public <T extends IHandler> Mem addIgnoreEvents(Class<T>... handlerClazz) {
+        for (Class<T> clazz : handlerClazz) {
+            ignoreEvents.add(handler2Type(clazz, true));
+        }
+        return Instance;
+    }
+
+    private static void initMap() {
+        ReflectUtil.scanClasses(HANDLER_PACKAGE, IHandler.class, clazz -> {
+            try {
+
+                String type = handler2Type(clazz, true);
+                typeHandlerMap.put(type, (IHandler) clazz.getDeclaredConstructor().newInstance());
+            } catch (Throwable e) {
+                System.out.println(e);
+                System.exit(0);
+            }
+            return true;
+        });
+
+        ReflectUtil.scanClasses(DTO_PACKAGE, EventModelBase.class, clazz -> {
+            String type = model2Type(clazz, true);
+            if (!typeHandlerMap.containsKey(type)) {
+                System.out.println("有" + clazz.getName() + ",但缺少相应的" + type + "Handler");
+            }
+            typeModelMap.put(type, clazz);
+            return true;
+        });
+        checkHandlerName("Halt");
+        ignoreEvents.add("Halt");
+        typeHandlerMap.put("Halt", new HaltHandler());
+        checkHandlerName("End");
+        ignoreEvents.add("End");
+        typeHandlerMap.put("End", new EndHandler());
+        checkHandlerName("EventToDb");
+        ignoreEvents.add("EventToDb");
+        typeHandlerMap.put("EventToDb", new EventToDbHandler());
+    }
+
+    private static void loadSnapAndEvent(Class<?> dataContainerClass, ICache cache) throws Exception {
+        StopWatch stopWatch = StopWatch.startNew("快照加载及事件重放");
+        List<File> eventFiles;
+        Path path = Paths.get(".");
+        Optional<Path> snapshot;
+
+        try (Stream<Path> stream = Files.walk(path);) {
+            snapshot = stream.filter(a -> a.toString().endsWith(SNAP)).max(Comparator.comparing(Path::toString));
+        }
+
+        String sanpFileName = null;
+        boolean b = snapshot.isPresent();
+        if (b) {
+            File file = snapshot.get().toFile();
+            restore(file, dataContainerClass);
+            cache.beforeReplay();
+            sanpFileName = file.getName().replace(SNAP, "");
+            try (Stream<Path> stream = Files.walk(path)) {
+                eventFiles = new ArrayList<>();
+                String finalSnapFileName = sanpFileName;
+                stream.forEach(path1 -> {
+                    if (path1.toString().endsWith(EVENT)) {
+                        String name = path1.toString().replace(".", "").replace("\\", "").replace(EVENT, "");
+                        if (name.compareTo(finalSnapFileName) > 0) {
+                            eventFiles.add(path1.toFile());
+                        }
+                    }
+                });
+            }
+        } else {
+            try (Stream<Path> stream = Files.walk(path)) {
+                eventFiles = stream.filter(a -> a.toString().endsWith(EVENT)).map(Path::toFile).collect(Collectors.toList());
+            }
+        }
+        eventFiles.sort(Comparator.comparing(File::getName));
+        replay(eventFiles);
+        file = createOrOpenEventFile(eventFiles, sanpFileName);
+        stopWatch.end("快照加载及事件重放");
+        cache.afterReplay();
+    }
+
+    private static void replay(List<File> sortedEventFiles) throws Exception {
+        for (File file : sortedEventFiles) {
+            try (RandomAccessFile rf = new RandomAccessFile(file, "r")) {
+                dealEventInFile(rf, event -> doEvent(event, false));
+            }
+        }
+    }
+
+    static String handler2Type(Class handlerClass, boolean check) {
+        String name = handlerClass.getSimpleName();
+        if (check && !name.endsWith("Handler")) {
+            System.out.println(handlerClass.getName() + "名称必须以Handler为后缀");
+            System.exit(0);
+            return null;
+        }
+        return name.substring(0, name.length() - 7);
+    }
+
+    private static void checkHandlerName(String handlerName) {
+        if (typeHandlerMap.containsKey(handlerName)) {
+            System.out.println(handlerName + "已被mem框架使用，请改用其他名称");
+            System.exit(0);
+        }
     }
 
     private static Path getNewestFile(String fileType) {

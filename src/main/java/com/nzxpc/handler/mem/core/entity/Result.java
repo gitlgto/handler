@@ -16,4 +16,9 @@ public class Result {
     private String msg;
     private int code;
     private String extend;
+
+    public Result(boolean ok, String msg) {
+        this.ok = ok;
+        this.msg = msg;
+    }
 }
