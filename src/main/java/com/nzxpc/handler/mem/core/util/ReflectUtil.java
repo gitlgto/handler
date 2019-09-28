@@ -29,4 +29,7 @@ public class ReflectUtil {
         }
 
     }
+    /**
+     * lanmda表达式获取字段，调用代码块中的逻辑进行处理 放在lan代码块中处理
+     */
 }
