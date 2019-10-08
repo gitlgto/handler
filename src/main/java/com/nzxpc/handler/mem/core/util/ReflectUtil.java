@@ -48,6 +48,31 @@ public class ReflectUtil {
         }
     }
 
+    public static void reflectAllFields(Class<?> clazz, Function<Field, Boolean> fn) {
+        for (; clazz != Object.class; clazz = clazz.getSuperclass()) {
+            Field[] fields = clazz.getDeclaredFields();
+            for (Field field : fields) {
+                Boolean apply = fn.apply(field);
+                if (!apply) {
+                    break;
+                }
+            }
+        }
+    }
+
+    public static Field getField(Class<?> aClass, String name) {
+        final Field[] ret = {null};
+        reflectAllFields(aClass, field -> {
+                    if (field.getName().equals(name)) {
+                        ret[0] = field;
+                        return false;
+                    }
+                    return true;
+                }
+        );
+        return ret[0];
+    }
+
     /**
      * 反射获取对象属性值，包括所有上级类，其中枚举取ordinal值
      */
