@@ -1,5 +1,6 @@
 package com.nzxpc.handler.mem.core.util.db.migrate.core;
 
+import com.nzxpc.handler.mem.core.util.LogUtil;
 import com.nzxpc.handler.mem.core.util.db.migrate.function.ColumnAnnotationHandler;
 import com.nzxpc.handler.mem.core.util.db.migrate.function.TableAnnotationHandler;
 import com.nzxpc.handler.mem.core.util.db.migrate.handler.DefaultHandler;
@@ -7,8 +8,14 @@ import com.nzxpc.handler.mem.core.util.db.migrate.model.ColumnModel;
 import com.nzxpc.handler.mem.core.util.db.migrate.model.KeyModel;
 import com.nzxpc.handler.mem.core.util.db.migrate.model.MigrateLog;
 import com.nzxpc.handler.mem.core.util.db.migrate.model.TableModel;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
 
+import javax.persistence.Entity;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -104,5 +111,60 @@ public class MigrateCore {
 
             });
         }
+
+        columnModels.forEach(c -> tables.get(c.TABLE_NAME.toLowerCase()).columns.put(c.COLUMN_NAME, c));
+        // 获取所有的实体类
+        List<Class<?>> entityClasses = listEntityByPackage();
+        if (entityClasses.size() == 1) {
+            if (tables.size() > 1 || (tables.size() == 1 && !tables.containsKey("MigrateLog".toLowerCase()))) {
+                throw new RuntimeException(String.format("数据库中已有数据表, 但包 [ %s ] 下没有找到实体类.", StringUtils.join(this.packageNames, ",")));
+            }
+        }
+//        entityClasses.forEach(this::reflectEntity);
+    }
+
+
+    /**
+     * 反射获取对象所有属性
+     */
+    private void reflectEntity(final Class<?> clazz) {
+        //一个类就是一个table
+        TableModel tableModel = new TableModel();
+        tableModel.TABLE_NAME = clazz.getSimpleName();
+        TABLE_ANNOTATION_HANDLER_MAP.forEach((annotation, handler) -> {
+            if (clazz.isAnnotationPresent(annotation)) {
+                handler.accept(clazz.getAnnotation(annotation), tableModel);
+            }
+        });
+        Class<?> cls = clazz;
+        for (; cls != Object.class; cls = cls.getSuperclass()) {
+
+        }
+    }
+
+    private void reflectField(Field field, TableModel table) {
+
+    }
+
+
+    /**
+     * 获取所有的实体类, 支持多个包
+     */
+    private List<Class<?>> listEntityByPackage() {
+        List<Class<?>> ret = new ArrayList<>();
+        ret.add(MigrateLog.class); // 添加迁移记录实体
+        try {
+            ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(true);
+            scanner.addIncludeFilter(new AnnotationTypeFilter(Entity.class));
+            for (String packageName : packageNames) {
+                for (BeanDefinition beanDefinition : scanner.findCandidateComponents(packageName)) {
+                    Class<?> entity = Class.forName(beanDefinition.getBeanClassName());
+                    ret.add(entity);
+                }
+            }
+        } catch (Exception e) {
+            LogUtil.err("", e);
+        }
+        return ret;
     }
 }
