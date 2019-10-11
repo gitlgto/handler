@@ -1,6 +1,7 @@
 package com.nzxpc.handler.mem.core.util.db.migrate.model;
 
 import com.nzxpc.handler.mem.core.util.db.migrate.core.DataType;
+import org.apache.commons.lang3.StringUtils;
 
 public class ColumnModel {
     /**
@@ -60,6 +61,77 @@ public class ColumnModel {
 
     @Override
     public String toString() {
-        return super.toString();
+        StringBuilder sb = new StringBuilder();
+        sb.append("'").append(COLUMN_NAME).append("' ").append(COLUMN_TYPE);
+        if (isPrimary()) {
+            sb.append("NOT NULL");
+        } else if ("NO".equals(IS_NULLABLE)) {
+            sb.append("NOT NULL");
+            DataType dataType = this.getDataType();
+            if (dataType.canSetDefaultValue) {
+                if (dataType.defaultValue instanceof Integer) {
+                    sb.append("DEFAULT").append(dataType.defaultValue);
+                } else {
+                    sb.append("DEFAULT '").append(dataType.defaultValue).append(" '");
+                }
+            }
+        } else {
+            sb.append("DEFAULT NULL");
+        }
+        if (StringUtils.isNotBlank(EXTRA)) {
+            sb.append(" ").append(EXTRA.toUpperCase());
+        }
+        if (StringUtils.isNotBlank(COLUMN_COMMENT)) {
+            sb.append("COMMENT '").append(COLUMN_COMMENT).append(" '");
+        }
+        return sb.toString();
+    }
+
+    public String toTypeString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("'").append(COLUMN_NAME).append(" '").append(COLUMN_TYPE);
+        if (isPrimary()) {
+            sb.append("NOT NULL");
+        } else if ("NO".equals(IS_NULLABLE)) {
+            sb.append("NOT NULL");
+            DataType dataType = this.getDataType();
+            if (dataType.canSetDefaultValue) {
+                if (dataType.defaultValue instanceof Integer) {
+                    sb.append("DEFAULT").append(dataType.defaultValue);
+                } else {
+                    sb.append("DEFAULT '").append(dataType.defaultValue).append(" '");
+                }
+            }
+        } else {
+            sb.append("DEFAULT NULL");
+        }
+        if (StringUtils.isNotBlank(COLUMN_COMMENT)) {
+            sb.append("COMMENT '").append(COLUMN_COMMENT).append(" '");
+        }
+        return sb.toString();
+    }
+
+    private TableModel tableModel;
+
+    public ColumnModel(TableModel tableModel) {
+        this.tableModel = tableModel;
+    }
+
+    public TableModel getTableModel() {
+        return tableModel;
+    }
+
+    /**
+     * 判断是否是主键，主键不能有默认值
+     */
+    public boolean isPrimary() {
+        return tableModel.primaryKeys.contains(this.COLUMN_NAME);
+    }
+
+    public DataType getDataType() {
+        if (this.dataType == null) {
+            this.dataType = DataType.valueOfDefinition(this.COLUMN_TYPE);
+        }
+        return dataType;
     }
 }

@@ -17,6 +17,10 @@ public class LogUtil {
         }
     }
 
+    public static void err(Class<?> clazz, Throwable e) {
+        LogFactory.getLog(clazz).error(e.getMessage(), e);
+    }
+
     public static void err(String msg) {
         LogFactory.getLog(new CurrentClassGetter().getCurrentClass()).error(msg);
     }
