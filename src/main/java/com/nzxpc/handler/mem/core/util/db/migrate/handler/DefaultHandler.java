@@ -1,12 +1,14 @@
 package com.nzxpc.handler.mem.core.util.db.migrate.handler;
 
 import com.nzxpc.handler.mem.core.entity.IndexColumn;
+import com.nzxpc.handler.mem.core.util.db.migrate.core.DataType;
 import com.nzxpc.handler.mem.core.util.db.migrate.core.MigrateCore;
 import com.nzxpc.handler.mem.core.util.db.migrate.model.ColumnModel;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.Column;
 import java.lang.annotation.Annotation;
+import java.math.BigDecimal;
 
 public class DefaultHandler {
     private static void ColumnHandler(Annotation annotation, ColumnModel model) {
@@ -43,5 +45,9 @@ public class DefaultHandler {
     public static void register() {
         MigrateCore.addColumnAnnotationHandler(Column.class, DefaultHandler::ColumnHandler);
         MigrateCore.addColumnAnnotationHandler(IndexColumn.class, DefaultHandler::IndexColumnHandler);
+    }
+
+    public static void defaultDataTypeMap() {
+        MigrateCore.addDataType(BigDecimal.class, DataType.Decimal);
     }
 }
