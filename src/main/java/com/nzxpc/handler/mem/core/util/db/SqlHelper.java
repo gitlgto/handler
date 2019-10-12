@@ -1,9 +1,16 @@
 package com.nzxpc.handler.mem.core.util.db;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -34,6 +41,52 @@ public abstract class SqlHelper<T> extends NamedParameterJdbcDaoSupport {
             }
         }
         return ret;
+    }
+
+    protected NamedParameterJdbcTemplate getJt() {
+        return getNamedParameterJdbcTemplate();
+    }
+
+    public <PrimitiveType> List<PrimitiveType> simpleList(String sql, Map<String, Object> map, Class<PrimitiveType> primitiveTypeClass) {
+        return getJt().queryForList(sql, map, primitiveTypeClass);
+    }
+
+    protected abstract PrepareSqlParamResult prepareSqlParamForUpdate(Object bean, List<String> updateColumns);
+
+    protected abstract PrepareSqlParamResult prepareSqlParamForAdd(Object bean);
+
+    public abstract boolean exist(String conditionSql, Map<String, Object> argMap);
+
+
+    /**
+     * 将map中的参数枚举转换成ordinal
+     */
+
+    static Map<String, Object> changeEum(Map<String, Object> argMap) {
+        Map<String, Object> ret = null;
+        if (argMap != null) {
+            ret = new HashMap<>();
+            for (String s : argMap.keySet()) {
+                Object o = argMap.get(s);
+                if (o.getClass().isEnum()) {
+                    Enum o1 = (Enum) o;
+                    int ordinal = o1.ordinal();
+                    ret.put(s, ordinal);
+                } else {
+                    ret.put(s, o);
+                }
+            }
+        }
+        return ret;
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    protected static class PrepareSqlParamResult {
+        protected String sql;
+        protected MapSqlParameterSource map;
     }
 
     private static String conditionSql(String srcSql, String conditionSql) {
