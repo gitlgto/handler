@@ -10,6 +10,9 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
@@ -28,11 +31,23 @@ public abstract class DataSourceConfigBase {
     protected abstract Class[] setEntityPackages();
 
     @Bean
+    public JdbcTemplate jdbcTemplate() {
+        return new JdbcTemplate(dataSource());
+    }
+
+    @Bean
     public DataSource dataSource() {
         String url = dataSourceProperties.getUrl();
         String username = dataSourceProperties.getUsername();
         String password = dataSourceProperties.getPassword();
         DbMigrateUtil.migrate(url, username, password, setEntityPackages());
         return DataSourceBuilder.create().type(HikariDataSource.class).url(url).username(username).password(password).build();
+    }
+
+    @Bean
+    public PlatformTransactionManager transactionManager() {
+        DataSourceTransactionManager dr = new DataSourceTransactionManager();
+        dr.setDataSource(dataSource());
+        return dr;
     }
 }
