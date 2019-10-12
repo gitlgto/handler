@@ -1,11 +1,13 @@
 package com.nzxpc.handler.mem.core.util.db.migrate.core;
 
 import com.nzxpc.handler.mem.core.util.LogUtil;
+import com.nzxpc.handler.mem.core.util.db.migrate.function.BatchParamHandler;
 import com.nzxpc.handler.mem.core.util.db.migrate.function.ResultSetHandler;
 import org.apache.http.client.ResponseHandler;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,9 +17,15 @@ public class MysqlUtil implements AutoCloseable {
     private String passWord;
     private Connection connection;
 
-    @Override
-    public void close() throws Exception {
 
+    public void close() {
+        if (this.connection != null) {
+            try {
+                this.connection.close();
+            } catch (SQLException e) {
+                LogUtil.err(MysqlUtil.class, e);
+            }
+        }
     }
 
     /**
@@ -67,6 +75,46 @@ public class MysqlUtil implements AutoCloseable {
             }
         }
     }
+
+    public void execute(String sql, Object... args) throws SQLException {
+        PreparedStatement statement = null;
+        try {
+            statement = getStatement(sql, args);
+            statement.execute();
+        } finally {
+            if (statement != null) {
+                statement.close();
+            }
+        }
+
+    }
+
+    /**
+     * 批量执行SQL
+     *
+     * @param sql     SQL语句
+     * @param list    参数
+     * @param handler 参数处理
+     * @see BatchParamHandler
+     */
+    public <T> void executeBatch(String sql, List<T> list, BatchParamHandler<T> handler) throws SQLException {
+        PreparedStatement statement = null;
+        try {
+            statement = getConnection().prepareStatement(sql);
+            if (list != null && list.size() > 0) {
+                for (T t : list) {
+                    handler.accept(statement, t);
+                    statement.addBatch();
+                }
+            }
+            statement.executeBatch();
+        } finally {
+            if (statement != null) {
+                statement.close();
+            }
+        }
+    }
+
 
     /**
      * 查询列表

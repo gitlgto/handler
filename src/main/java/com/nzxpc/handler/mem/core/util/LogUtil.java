@@ -17,6 +17,12 @@ public class LogUtil {
         }
     }
 
+    public static void info(Class<?> clazz, String msg) {
+        if (IsInfoLevel) {
+            LogFactory.getLog(clazz).info(msg);
+        }
+    }
+
     public static void err(Class<?> clazz, Throwable e) {
         LogFactory.getLog(clazz).error(e.getMessage(), e);
     }
