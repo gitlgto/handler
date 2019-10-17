@@ -80,6 +80,14 @@ public abstract class SqlHelper<T> extends NamedParameterJdbcDaoSupport {
         return ret;
     }
 
+    /**
+     * 执行原生sql进行db修改
+     */
+    public int doSql(String sql, Map<String, Object> argMap) {
+        argMap = changeEum(argMap);
+        return getJt().update(sql, argMap);
+    }
+
     @Getter
     @Setter
     @AllArgsConstructor
