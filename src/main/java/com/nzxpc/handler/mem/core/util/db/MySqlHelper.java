@@ -6,6 +6,7 @@ import com.nzxpc.handler.mem.core.util.ReflectUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -119,12 +120,33 @@ public class MySqlHelper<T> extends SqlHelper<T> {
         return ret;
     }
 
+    /**
+     * 指定数组size，超过越界，存入对应index的数据
+     */
+    protected <Entity> SqlParameterSource[] prepareSqlParams(Collection<Entity> collection) {
+        SqlParameterSource[] sources = new SqlParameterSource[collection.size()];
+        int i = 0;
+        for (Entity bean : collection) {
+            Map<String, Object> map = ReflectUtil.getAllFieldsForBatchAdd(bean);
+            sources[i++] = new MapSqlParameterSource(map);
+        }
+        return sources;
+    }
 
-
-
+    /**
+     * 查询返回字段和查询结果对应map
+     *
+     * @param conditionSql 拼接sql name=：name
+     * @param argMap       存入对应参数
+     * @return
+     */
     @Override
     public boolean exist(String conditionSql, Map<String, Object> argMap) {
-        return false;
+        if (argMap == null) {
+            throw new RuntimeException("argMap不能为空");
+        }
+        Map<String, Object> simple = getSimple("SELECT COUNT(0) `cnt` FROM " + parseName(tableName) + "WHERE" + conditionSql, argMap);
+        return (long) simple.get("cnt") > 0;
     }
 
     @Override
