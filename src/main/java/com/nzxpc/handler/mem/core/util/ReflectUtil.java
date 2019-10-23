@@ -74,7 +74,7 @@ public class ReflectUtil {
     }
 
     /**
-     * 反射获取对象属性值，包括所有上级类，其中枚举取ordinal值
+     * 反射获取对象属性值，包括所有上级类，其中枚举取ordinal值  忽略静态属性和类型非bigdecimal的null值
      */
     public static Map<String, Object> getAllFields(Object bean, List<String> targetPropList) {
         Map<String, Object> ret = new HashMap<>();
@@ -120,6 +120,51 @@ public class ReflectUtil {
                 ret.put((item != null && item.isPresent()) ? item.get() : field.getName(), val);
             }
 
+        });
+        return ret;
+    }
+
+    /**
+     * 反射获取对象属性，包括上级，不忽略任何值
+     *
+     * @return
+     */
+    public static Map<String, Object> getAllFieldsForBatchAdd(Object bean) {
+        Map<String, Object> ret = new HashMap<>();
+        reflectAllField(bean.getClass(), field -> {
+            if (ret.containsKey(field.getName())) {
+                return;
+            }
+            boolean isStatic = Modifier.isStatic(field.getModifiers());
+            //忽略静态属性
+            if (isStatic) {
+                return;
+            }
+            field.setAccessible(true);
+            Object val = null;
+            try {
+                val = field.get(bean);
+
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            if (val == null) {
+                if (val.getClass() == BigDecimal.class) {
+                    val = BigDecimal.ZERO;
+                }
+            }
+            if (field.isAnnotationPresent(EmbeddedId.class)) {
+                assert val != null;
+                Map<String, Object> map = getAllFieldsForBatchAdd(val);
+                ret.putAll(map);
+                return;
+            }
+            if (val instanceof Enum<?>) {
+                //枚举对象取ordinal
+                Enum<?> anEnum = (Enum<?>) val;
+                val = anEnum.ordinal();
+            }
+            ret.put(field.getName(), val);
         });
         return ret;
     }

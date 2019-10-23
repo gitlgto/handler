@@ -47,12 +47,28 @@ public abstract class SqlHelper<T> extends NamedParameterJdbcDaoSupport {
         return getNamedParameterJdbcTemplate();
     }
 
+    /**
+     * 应用场景，返回值是基本数据类型
+     * @param sql
+     * @param map
+     * @param primitiveTypeClass
+     * @param <PrimitiveType>
+     * @return
+     */
     public <PrimitiveType> List<PrimitiveType> simpleList(String sql, Map<String, Object> map, Class<PrimitiveType> primitiveTypeClass) {
         return getJt().queryForList(sql, map, primitiveTypeClass);
     }
 
+    /**
+     * 返回值中的sql示例：set name=:name,money=:money
+     *
+     */
     protected abstract PrepareSqlParamResult prepareSqlParamForUpdate(Object bean, List<String> updateColumns);
 
+    /**
+     * 返回的sql示例：(name,money) values (:name,:money)
+     *
+     */
     protected abstract PrepareSqlParamResult prepareSqlParamForAdd(Object bean);
 
     public abstract boolean exist(String conditionSql, Map<String, Object> argMap);
