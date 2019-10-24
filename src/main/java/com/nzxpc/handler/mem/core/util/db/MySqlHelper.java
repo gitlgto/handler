@@ -1,5 +1,6 @@
 package com.nzxpc.handler.mem.core.util.db;
 
+import com.google.common.collect.ImmutableMap;
 import com.nzxpc.handler.mem.core.entity.Getter;
 import com.nzxpc.handler.mem.core.entity.IdEntityBasePure;
 import com.nzxpc.handler.mem.core.util.ReflectUtil;
@@ -14,16 +15,17 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.util.*;
 
+@SuppressWarnings("unchecked")
 public class MySqlHelper<T> extends SqlHelper<T> {
-
-    protected MySqlHelper() {
-    }
 
     public MySqlHelper(Class<T> persistentClass, JdbcTemplate jt) {
         tableName = persistentClass.getSimpleName();
         this.persistentClass = persistentClass;
         propList.addAll(getPropList(persistentClass));
         setJdbcTemplate(jt);
+    }
+
+    protected MySqlHelper() {
     }
 
     /**
@@ -154,18 +156,32 @@ public class MySqlHelper<T> extends SqlHelper<T> {
         return null;
     }
 
+    @SuppressWarnings("ALL")
     @Override
-    public <Entity> int update(Entity data, String conditionSql, Map<String, Object> conditionMap, String... updateColumns) {
-        return 0;
+    public <IdEntity extends IdEntityBasePure> int updateById(IdEntity data, String... updateColumns) {
+        Map<String, Object> argMap = ImmutableMap.of("id", data.getId());
+        return update(data, "`id`=:id", argMap, updateColumns);
     }
 
     @Override
-    public <IdEntity extends IdEntityBasePure> int updateById(IdEntity data, String updateColumns) {
-        return 0;
+    public <Entity> int update(Entity data, String conditionSql, Map<String, Object> conditionMap, String... updateColumns) {
+        conditionMap = changeEum(conditionMap);
+        for (String s : conditionMap.keySet()) {
+            for (String s1 : updateColumns) {
+                if (StringUtils.equalsIgnoreCase(s, s1)) {
+                    throw new RuntimeException("更新列" + s1 + "和sql参数" + s + "一样");
+                }
+            }
+        }
+        PrepareSqlParamResult result = prepareSqlParamForUpdate(data, Arrays.asList(updateColumns));
+        result.map.addValues(conditionMap);
+        String sql = "UPDATE" + parseName(tableName) + " " + result.sql + "WHERE" + conditionSql;
+        return getJt().update(sql, result.map);
     }
 
     @Override
     public <IdEntity extends IdEntityBasePure, V> int updateById(IdEntity data, Getter<IdEntity, V>... getters) {
+
         return 0;
     }
 

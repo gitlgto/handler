@@ -16,6 +16,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@SuppressWarnings("unchecked")
 public abstract class SqlHelper<T> extends NamedParameterJdbcDaoSupport {
     private final static char QuoteMark = '`';
     List<String> propList = new ArrayList<>();
@@ -129,7 +130,8 @@ public abstract class SqlHelper<T> extends NamedParameterJdbcDaoSupport {
      * 按id更新，针对直接继承IdEntity的实体，{@link com.nzxpc.handler.mem.core.entity.IdEntityBasePure}
      * 返回影响的行数
      */
-    public abstract <IdEntity extends IdEntityBasePure> int updateById(IdEntity data, String updateColumns);
+    @SuppressWarnings("ALL")
+    public abstract <IdEntity extends IdEntityBasePure> int updateById(IdEntity data, String... updateColumns);
 
     public abstract <IdEntity extends IdEntityBasePure, V> int updateById(IdEntity data, com.nzxpc.handler.mem.core.entity.Getter<IdEntity, V>... getters);
 
