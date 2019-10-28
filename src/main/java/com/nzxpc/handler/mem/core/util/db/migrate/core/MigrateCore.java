@@ -1,7 +1,7 @@
 package com.nzxpc.handler.mem.core.util.db.migrate.core;
 
 import com.nzxpc.handler.mem.core.util.LogUtil;
-import com.nzxpc.handler.mem.core.util.Md5Util;
+import com.nzxpc.handler.mem.core.util.encrypt.Md5Util;
 import com.nzxpc.handler.mem.core.util.db.migrate.function.ColumnAnnotationHandler;
 import com.nzxpc.handler.mem.core.util.db.migrate.function.TableAnnotationHandler;
 import com.nzxpc.handler.mem.core.util.db.migrate.handler.DefaultHandler;

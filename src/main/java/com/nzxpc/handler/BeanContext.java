@@ -11,4 +11,8 @@ public class BeanContext {
     public static void setApplicationContext(ApplicationContext applicationContext) {
         APPLICATION_CONTEXT = applicationContext;
     }
+
+    public static <T> T getBean(Class<T> tClass) {
+        return APPLICATION_CONTEXT.getBean(tClass);
+    }
 }

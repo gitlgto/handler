@@ -2,8 +2,6 @@ package com.nzxpc.handler.mem.core.util.db;
 
 import com.nzxpc.handler.BeanContext;
 import com.nzxpc.handler.mem.core.util.db.migrate.DbMigrateUtil;
-import com.nzxpc.handler.mem.core.util.db.migrate.annotation.Migrate;
-import com.nzxpc.handler.mem.core.util.db.migrate.core.MigrateCore;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
@@ -26,6 +24,7 @@ public abstract class DataSourceConfigBase {
     @PostConstruct
     private void init() {
         BeanContext.setApplicationContext(context);
+        DbUtil.setJt(jdbcTemplate());
     }
 
     protected abstract Class[] setEntityPackages();

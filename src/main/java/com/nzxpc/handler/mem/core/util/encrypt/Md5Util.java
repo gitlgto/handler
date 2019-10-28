@@ -1,4 +1,4 @@
-package com.nzxpc.handler.mem.core.util;
+package com.nzxpc.handler.mem.core.util.encrypt;
 
 import org.apache.commons.codec.binary.Hex;
 

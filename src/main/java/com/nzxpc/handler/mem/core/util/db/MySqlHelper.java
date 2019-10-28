@@ -13,6 +13,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
+import javax.validation.constraints.Max;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -156,8 +157,31 @@ public class MySqlHelper<T> extends SqlHelper<T> {
     }
 
     @Override
-    public <E> PageBean<E> query(PageBean<E> pageBean, String sql, Map<String, Object> map, Class<E> clazz) {
-        return null;
+    public <E> PageBean<E> query(PageBean<E> pageBean, String sql, Map<String, Object> argMap, Class<E> clazz) {
+        argMap = changeEum(argMap);
+        List<String> propList = getPropList(clazz); // 要使用自定义的类属性判断
+
+        int startRow = pageBean.getStartRow();
+        int offset = pageBean.getPageSize();
+        StringBuilder sb = new StringBuilder(sql);
+        int count = this.getCount(sb.toString(), argMap);
+        pageBean.setRowCount(count);
+
+        if (StringUtils.isNotBlank(pageBean.getOrderField()) && propList.contains(pageBean.getOrderField().toLowerCase())) {
+            sb.append(" ORDER BY ");
+            sb.append(parseName(pageBean.getOrderField()));
+            if (StringUtils.isNotBlank(pageBean.getOrderDirection())) {
+                sb.append(" ");
+                sb.append(pageBean.getOrderDirection());
+            }
+        }
+        sb.append(" LIMIT ");
+        sb.append(startRow);
+        sb.append(",");
+        sb.append(offset);
+        @SuppressWarnings({"unchecked", "rawtypes"}) List<E> data = getJt().query(sb.toString(), argMap, new BeanPropertyRowMapper(clazz));
+        pageBean.setData(data);
+        return pageBean;
     }
 
     @SuppressWarnings("ALL")
@@ -308,24 +332,53 @@ public class MySqlHelper<T> extends SqlHelper<T> {
     }
 
 
-
     @Override
     public int getCount(String sql, Map<String, Object> argMap) {
-        return 0;
+        argMap = changeEum(argMap);
+        StringBuilder sb = new StringBuilder("SELECT COUNT(0) `cnt` FROM (");
+        sb.append(sql);
+        sb.append(") AS `_tn`");
+        return (int) (long) getSimple(sb.toString(), argMap).get("cnt");
     }
 
     @Override
     public PageBean<T> list(PageBean<T> pageBean, String sql, Map<String, Object> argMap) {
-        return null;
+        argMap = changeEum(argMap);
+        int startRow = pageBean.getStartRow();
+        //一页的记录数
+        @Max(100) int pageSize = pageBean.getPageSize();
+        StringBuilder sb = new StringBuilder(sql);
+        int count = this.getCount(sb.toString(), argMap);
+        //总记录数
+        pageBean.setRowCount(count);
+        if (StringUtils.isNotBlank(pageBean.getOrderField()) && propList.contains(pageBean.getOrderField().toLowerCase())) {
+            sb.append(" ORDER BY ");
+            sb.append(parseName(pageBean.getOrderField()));
+            if (StringUtils.isNotBlank(pageBean.getOrderDirection())) {
+                sb.append(" ");
+                sb.append(pageBean.getOrderDirection());
+            }
+            if (propList.contains("id") && !"id".equalsIgnoreCase(pageBean.getOrderField())) {
+                sb.append(",`id` ASC");
+            }
+        }
+        sb.append(" LIMIT ");
+        sb.append(startRow);
+        sb.append(",");
+        sb.append(pageSize);
+
+        @SuppressWarnings({"rawtypes", "unchecked"}) List<T> data = getJt().query(sb.toString(), argMap, new BeanPropertyRowMapper(persistentClass));
+        pageBean.setData(data);
+        return pageBean;
     }
 
     @Override
     public PageBean<T> list(PageBean<T> pageBean, String sql) {
-        return null;
+        return list(pageBean, sql, null);
     }
 
     @Override
     public List<T> simpleList(String sql, Map<String, Object> argMap) {
-        return null;
+        return getJt().queryForList(sql, argMap, persistentClass);
     }
 }
