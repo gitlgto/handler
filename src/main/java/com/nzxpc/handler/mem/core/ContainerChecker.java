@@ -2,7 +2,7 @@ package com.nzxpc.handler.mem.core;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nzxpc.handler.mem.core.entity.DbSaver;
-import com.nzxpc.handler.mem.core.util.ReflectUtil;
+import com.nzxpc.handler.util.ReflectUtil;
 
 import javax.persistence.Entity;
 import java.io.File;

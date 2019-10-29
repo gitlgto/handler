@@ -1,6 +1,5 @@
 package com.nzxpc.handler.mem.core.entity;
 
-import com.nzxpc.handler.mem.core.util.StrUtil;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;

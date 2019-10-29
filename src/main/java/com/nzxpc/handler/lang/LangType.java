@@ -1,6 +1,6 @@
 package com.nzxpc.handler.lang;
 
-import com.nzxpc.handler.validate.Display;
+import com.nzxpc.handler.util.validate.Display;
 
 public enum LangType {
     @Display("简体中文")

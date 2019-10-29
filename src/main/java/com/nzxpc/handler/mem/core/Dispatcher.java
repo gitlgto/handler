@@ -4,8 +4,8 @@ import com.nzxpc.handler.mem.core.entity.DefaultEventModel;
 import com.nzxpc.handler.mem.core.entity.EventModelBase;
 import com.nzxpc.handler.mem.core.entity.OpType;
 import com.nzxpc.handler.mem.core.entity.Result;
-import com.nzxpc.handler.mem.core.util.ThreadUtil;
-import com.nzxpc.handler.mem.core.util.Util;
+import com.nzxpc.handler.util.ThreadUtil;
+import com.nzxpc.handler.util.Util;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
