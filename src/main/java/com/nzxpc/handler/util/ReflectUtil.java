@@ -172,4 +172,21 @@ public class ReflectUtil {
     public static Map<String, Object> getAllFields(Object bean) {
         return getAllFields(bean, null);
     }
+
+    /**
+     * 根据反射和传入字段名称获取对应class中对应该字段的值
+     *
+     * @return
+     */
+    public static Object getValue(Object o, String name) {
+        Class<?> clazz = o.getClass();
+        Field field = getField(clazz, name);
+        try {
+            field.setAccessible(true);
+            return field.get(o);
+        } catch (Exception e) {
+            LogUtil.err("", e);
+        }
+        return null;
+    }
 }

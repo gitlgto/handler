@@ -14,6 +14,7 @@ import java.util.HashMap;
  * 根据BeanUtils源码优化的copy工具类，避免对象键值为null，会把target对应键值赋值为null
  * 1.不用跨过某些属性赋值，因此传入的参数有的不需要。2.另外不需要转换
  */
+@SuppressWarnings("ALL")
 public class MyBeanUtils extends BeanUtils {
 
     public static HashMap<PropertyDescriptor, PropertyDescriptor> getPropertyDescriptors(Class<?> sourceClass, Class<?> targetClass) {
