@@ -23,6 +23,10 @@ public class RateControlValidator implements ConstraintValidator<RateControl, Ob
     @Override
     public void initialize(RateControl constraintAnnotation) {
         //初始化方法，进行初始化操作
+        targetArr = constraintAnnotation.target();
+        byArr = constraintAnnotation.by();
+        rateCanBeZero = constraintAnnotation.rateCanBeZero();
+        decimalCanBeZeroArr = constraintAnnotation.decimalCanBeZero();
 
     }
 
@@ -30,5 +34,19 @@ public class RateControlValidator implements ConstraintValidator<RateControl, Ob
     public boolean isValid(Object value, ConstraintValidatorContext context) {
         //校验方法（object value对应添加注解的对象，类，字段等）
         return false;
+    }
+
+    private boolean canBeZero(boolean byRate, int index) {
+        //是否是比例
+        try {
+            if (byRate) {
+                //如果length只有2，却要取角标为2，会报错3.判断是否小于index
+                return rateCanBeZero.length == 1 ? rateCanBeZero[0] : rateCanBeZero[index];
+            } else {
+                return decimalCanBeZeroArr.length == 1 ? decimalCanBeZeroArr[0] : decimalCanBeZeroArr[index];
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Array IndexOutOf Bounds");
+        }
     }
 }
