@@ -4,6 +4,7 @@ import com.nzxpc.handler.mem.core.entity.IndexColumn;
 import com.nzxpc.handler.util.db.migrate.annotation.Migrate;
 import com.nzxpc.handler.util.db.migrate.core.DataType;
 import com.nzxpc.handler.util.db.migrate.core.MigrateCore;
+import com.nzxpc.handler.util.db.migrate.function.ColumnAnnotationHandler;
 import com.nzxpc.handler.util.db.migrate.model.ColumnModel;
 import com.nzxpc.handler.util.db.migrate.model.TableModel;
 import com.nzxpc.handler.util.validate.Display;
@@ -140,6 +141,10 @@ public class DefaultHandler {
      * 至于如何执行是哪个handler，是根据传入的class做比较。
      */
     public static void register() {
+        //接受的lanmda方法，对应参数也要一样
+//        ColumnAnnotationHandler columnAnnotationHandler=DefaultHandler::ColumnHandler;跟反射一个道理
+//        columnAnnotationHandler.accept();
+        //Consumer consumer=k->{} consumer.accept(),双冒号也是lanmda表达式写法的一种，类加方法，已经接受了参数
         MigrateCore.addColumnAnnotationHandler(Id.class, DefaultHandler::IdHandler);
         MigrateCore.addColumnAnnotationHandler(Column.class, DefaultHandler::ColumnHandler);
         MigrateCore.addColumnAnnotationHandler(IndexColumn.class, DefaultHandler::IndexColumnHandler);
