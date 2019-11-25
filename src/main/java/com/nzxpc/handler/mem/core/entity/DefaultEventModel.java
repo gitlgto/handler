@@ -1,6 +1,7 @@
 package com.nzxpc.handler.mem.core.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.nzxpc.handler.mem.core.MemIdEntityPure;
 import com.nzxpc.handler.util.IpUtil;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

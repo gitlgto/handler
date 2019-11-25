@@ -109,7 +109,17 @@ public class MigrateCore {
             }
 
         }
-        //修改
+        // 修改
+        for (Map.Entry<String, TableModel> entry : entities.entrySet()) {
+            TableModel table = entry.getValue();
+            migrateTable(table, tables.get(entry.getKey()));
+        }
+        // 删除多余的表
+        for (Map.Entry<String, TableModel> entry : tables.entrySet()) {
+            if (!entities.containsKey(entry.getKey())) {
+                execSql("DROP TABLE " + entry.getValue().TABLE_NAME);
+            }
+        }
     }
 
     private void migrateTable(TableModel table, TableModel dbTable) throws SQLException {
@@ -261,13 +271,13 @@ public class MigrateCore {
             jdbc.execute(sql, args);
             migrateLog.setSuccess(true);
         } catch (Exception e) {
-            LogUtil.err("执行失败", e);
+            LogUtil.err("执行失败"+sql, e);
             migrateLog.setSuccess(false);
             throw e;
         }
     }
 
-    private void loadMetadata() throws SQLException {
+    private void loadMetadata() throws SQLException,RuntimeException {
 
         this.dbName = this.jdbc.queryForObject("SELECT DATABASE()", rs -> rs.getString(1));
         final List<TableModel> tableName = this.jdbc.queryForList("SELECT TABLE_NAME FROM information_schema.`TABLES` WHERE TABLE_SCHEMA = ?", rs -> {
@@ -296,7 +306,7 @@ public class MigrateCore {
 
         for (TableModel tableModel : tableName) {
 
-            ArrayList<KeyModel> keyList = this.jdbc.queryForList(String.format("SHOW INDEX FROM %s.`%s`", dbName, tableModel.TABLE_NAME), rt -> {
+            final List<KeyModel> keyList = this.jdbc.queryForList(String.format("SHOW INDEX FROM %s.`%s`", dbName, tableModel.TABLE_NAME), rt -> {
                 KeyModel model = new KeyModel();
                 model.Table = rt.getString("Table");
                 model.Non_unique = rt.getBoolean("Non_unique");
@@ -366,6 +376,8 @@ public class MigrateCore {
         ColumnModel columnModel = new ColumnModel(table);
         columnModel.COLUMN_NAME = field.getName();
         final Class<?> fieldType = field.getType();
+        //annotion对应注解class，初次加载就添加进去，handler对应处理该注解的方法，遍历执行field对应的方法，并对columnmodel处理
+        //定义一个接口，有方法，和参数，将该接口放入map，并添加相应方法 函数式接口 接收lanmda表达式，相当于存的方法，并使用接口中的方法传入字段
         COLUMN_ANNOTATION_HANDLER_MAP.forEach((annotation, handler) -> {
             if (field.isAnnotationPresent(annotation)) {
                 handler.accept(field.getAnnotation(annotation), columnModel);
@@ -380,25 +392,26 @@ public class MigrateCore {
             } else {
                 columnModel.COLUMN_COMMENT += ":";
             }
-        }
-        StringJoiner sj = new StringJoiner(",");
-        sj.setEmptyValue("");
-        Field[] fields = fieldType.getDeclaredFields();
-        if (fields != null) {
-            for (Field field1 : fields) {
-                if (field1.isAnnotationPresent(Display.class)) {
-                    Display display = field1.getAnnotation(Display.class);
-                    sj.add(String.format("%s(%s)", field1.getName(), display.value()));
-                } else {
-                    sj.add(field1.getName());
+            StringJoiner sj = new StringJoiner(",");
+            sj.setEmptyValue("");
+            Field[] fields = fieldType.getFields();
+            if (fields != null) {
+                for (Field field1 : fields) {
+                    if (field1.isAnnotationPresent(Display.class)) {
+                        Display display = field1.getAnnotation(Display.class);
+                        sj.add(String.format("%s(%s)", field1.getName(), display.value()));
+                    } else {
+                        sj.add(field1.getName());
+                    }
                 }
             }
+            columnModel.COLUMN_COMMENT += sj.toString();
         }
-        columnModel.COLUMN_COMMENT += sj.toString();
-        if (StringUtils.isBlank(columnModel.COLUMN_COMMENT)) {
+        if (StringUtils.isBlank(columnModel.COLUMN_TYPE)) {
             DataType type = DATA_TYPE_MAP.get(fieldType.isEnum() ? byte.class : fieldType);
             if (type == null) {
                 LogUtil.err(String.format("不支持的类型，name=%s,value=%s", field.getName(), field.getType()));
+                return;
             } else {
                 columnModel.COLUMN_TYPE = type.toString(columnModel);
             }

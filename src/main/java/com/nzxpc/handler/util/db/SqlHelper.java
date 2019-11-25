@@ -1,6 +1,5 @@
 package com.nzxpc.handler.util.db;
 
-import com.nzxpc.handler.mem.core.entity.IdEntityBasePure;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

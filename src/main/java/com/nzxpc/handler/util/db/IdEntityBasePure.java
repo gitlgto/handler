@@ -1,7 +1,7 @@
-package com.nzxpc.handler.mem.core.entity;
+package com.nzxpc.handler.util.db;
 
+import com.nzxpc.handler.util.validate.Display;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import javax.persistence.GeneratedValue;
@@ -13,14 +13,18 @@ import javax.validation.constraints.Min;
 import java.io.Serializable;
 
 @Getter
-@Setter
 @Accessors(chain = true)
 @MappedSuperclass
-public class IdEntityBasePure implements Serializable {
+public class IdEntityBasePure<T extends IdEntityBasePure> implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Min(value = 0, message = "参数非法")
-    @Max(value = Integer.MAX_VALUE, message = "参数非法")
+    @Min(value = 0, message = "[{display}]参数非法")
+    @Max(value = Integer.MAX_VALUE, message = "[{display}]参数非法")
+    @Display("序号")
     private int id;
 
+    public T setId(int id) {
+        this.id = id;
+        return (T) this;
+    }
 }

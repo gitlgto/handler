@@ -21,7 +21,7 @@ public class TableModel {
     public void addKey(String keyName, boolean unique, String... columnNames) {
         boolean union = StringUtils.isNotBlank(keyName);
         for (int i = 0; i < columnNames.length; i++) {
-            columnNames[i] = String.format("'%s'", columnNames[i]);
+            columnNames[i] = String.format("`%s`", columnNames[i]);
         }
 
         List<String> cols = new ArrayList<>(Arrays.asList(columnNames));
@@ -54,7 +54,7 @@ public class TableModel {
     public String joinPrimaryKeys() {
         StringJoiner sj = new StringJoiner(",");
         sj.setEmptyValue("");
-        primaryKeys.forEach(item -> sj.add(String.format("'%s'", item)));
+        primaryKeys.forEach(item -> sj.add(String.format("`%s`", item)));
         return sj.toString();
     }
 

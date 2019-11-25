@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
  * 删除属性，删除对应列
  * 修改索引
  * 修改属性或约束
+ * 总结出现的几点问题。1.sql语句的书写问题，其次字段的使用错误，反射应当获取直至父类
  */
 public class DbMigrateUtil {
     public static void migrate(String url, String username, String password, Class... packageClass) {

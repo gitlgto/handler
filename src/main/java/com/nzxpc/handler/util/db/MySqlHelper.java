@@ -2,7 +2,6 @@ package com.nzxpc.handler.util.db;
 
 import com.google.common.collect.ImmutableMap;
 import com.nzxpc.handler.mem.core.entity.Getter;
-import com.nzxpc.handler.mem.core.entity.IdEntityBasePure;
 import com.nzxpc.handler.util.ReflectUtil;
 import com.nzxpc.handler.util.Util;
 import org.apache.commons.lang3.StringUtils;

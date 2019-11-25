@@ -62,51 +62,51 @@ public class ColumnModel {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("'").append(COLUMN_NAME).append("' ").append(COLUMN_TYPE);
+        sb.append("`").append(COLUMN_NAME).append("` ").append(COLUMN_TYPE);
         if (isPrimary()) {
-            sb.append("NOT NULL");
+            sb.append(" NOT NULL");
         } else if ("NO".equals(IS_NULLABLE)) {
-            sb.append("NOT NULL");
+            sb.append(" NOT NULL");
             DataType dataType = this.getDataType();
             if (dataType.canSetDefaultValue) {
                 if (dataType.defaultValue instanceof Integer) {
-                    sb.append("DEFAULT").append(dataType.defaultValue);
+                    sb.append(" DEFAULT ").append(dataType.defaultValue);
                 } else {
-                    sb.append("DEFAULT '").append(dataType.defaultValue).append(" '");
+                    sb.append(" DEFAULT '").append(dataType.defaultValue).append("'");
                 }
             }
         } else {
-            sb.append("DEFAULT NULL");
+            sb.append(" DEFAULT NULL");
         }
         if (StringUtils.isNotBlank(EXTRA)) {
             sb.append(" ").append(EXTRA.toUpperCase());
         }
         if (StringUtils.isNotBlank(COLUMN_COMMENT)) {
-            sb.append("COMMENT '").append(COLUMN_COMMENT).append(" '");
+            sb.append(" COMMENT '").append(COLUMN_COMMENT).append("'");
         }
         return sb.toString();
     }
 
     public String toTypeString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("'").append(COLUMN_NAME).append(" '").append(COLUMN_TYPE);
+        sb.append("`").append(COLUMN_NAME).append("` ").append(COLUMN_TYPE);
         if (isPrimary()) {
-            sb.append("NOT NULL");
+            sb.append(" NOT NULL");
         } else if ("NO".equals(IS_NULLABLE)) {
-            sb.append("NOT NULL");
+            sb.append(" NOT NULL");
             DataType dataType = this.getDataType();
             if (dataType.canSetDefaultValue) {
                 if (dataType.defaultValue instanceof Integer) {
-                    sb.append("DEFAULT").append(dataType.defaultValue);
+                    sb.append(" DEFAULT").append(dataType.defaultValue);
                 } else {
-                    sb.append("DEFAULT '").append(dataType.defaultValue).append(" '");
+                    sb.append(" DEFAULT '").append(dataType.defaultValue).append("'");
                 }
             }
         } else {
-            sb.append("DEFAULT NULL");
+            sb.append(" DEFAULT NULL");
         }
         if (StringUtils.isNotBlank(COLUMN_COMMENT)) {
-            sb.append("COMMENT '").append(COLUMN_COMMENT).append(" '");
+            sb.append(" COMMENT '").append(COLUMN_COMMENT).append("'");
         }
         return sb.toString();
     }
