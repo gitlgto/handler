@@ -35,6 +35,10 @@ public class LogUtil {
         LogFactory.getLog(new CurrentClassGetter().getCurrentClass()).error(msg, e);
     }
 
+    public static void err(Throwable e) {
+        LogFactory.getLog(new CurrentClassGetter().getCurrentClass()).error(e.getMessage(), e);
+    }
+
     private static class CurrentClassGetter extends SecurityManager {
         public Class getCurrentClass() {
             Class<?>[] arr = getClassContext();

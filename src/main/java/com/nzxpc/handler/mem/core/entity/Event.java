@@ -21,11 +21,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Event extends IdEntityBaseNoUpdate {
-    @IndexColumn
     private int doerId;
     @Max(value = 30)
     private String ip;
-    @IndexColumn
     private String type;
     @Column(columnDefinition = "datetime(3)")
     private LocalDateTime time;

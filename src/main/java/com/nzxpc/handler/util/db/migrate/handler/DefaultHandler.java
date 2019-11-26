@@ -1,10 +1,9 @@
 package com.nzxpc.handler.util.db.migrate.handler;
 
-import com.nzxpc.handler.mem.core.entity.IndexColumn;
+import com.nzxpc.handler.util.db.migrate.annotation.IndexColumn;
 import com.nzxpc.handler.util.db.migrate.annotation.Migrate;
 import com.nzxpc.handler.util.db.migrate.core.DataType;
 import com.nzxpc.handler.util.db.migrate.core.MigrateCore;
-import com.nzxpc.handler.util.db.migrate.function.ColumnAnnotationHandler;
 import com.nzxpc.handler.util.db.migrate.model.ColumnModel;
 import com.nzxpc.handler.util.db.migrate.model.TableModel;
 import com.nzxpc.handler.util.validate.Display;

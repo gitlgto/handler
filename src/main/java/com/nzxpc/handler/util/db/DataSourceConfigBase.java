@@ -23,6 +23,7 @@ public abstract class DataSourceConfigBase {
 
     @PostConstruct
     private void init() {
+        //用main的话，application没启动，没有初始化
         BeanContext.setApplicationContext(context);
         DbUtil.setJt(jdbcTemplate());
     }
