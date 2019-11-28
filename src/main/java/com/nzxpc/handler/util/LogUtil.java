@@ -38,6 +38,10 @@ public class LogUtil {
     public static void err(Throwable e) {
         LogFactory.getLog(new CurrentClassGetter().getCurrentClass()).error(e.getMessage(), e);
     }
+    public static void errThenExit(Throwable throwable) {
+        err(throwable);
+        System.exit(0);
+    }
 
     private static class CurrentClassGetter extends SecurityManager {
         public Class getCurrentClass() {

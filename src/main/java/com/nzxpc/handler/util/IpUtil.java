@@ -3,6 +3,7 @@ package com.nzxpc.handler.util;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
+import java.net.InetAddress;
 
 public class IpUtil {
     private static String dealIp(String ip) {
@@ -34,5 +35,17 @@ public class IpUtil {
 
     public static String getIp(HttpServletRequest request) {
         return _getIp(request);
+    }
+    /**
+     * desc 判断是否是本地地址或内网地址，比如127.0.0.1、localhost、172.17.80.73都会返回true
+     **/
+    public static boolean isLocal(String ip) {
+        try {
+            InetAddress addr = InetAddress.getByName(ip);
+            return addr.isAnyLocalAddress() || addr.isLoopbackAddress() || addr.isSiteLocalAddress();
+        } catch (Exception e) {
+            LogUtil.err(e);
+            return false;
+        }
     }
 }
