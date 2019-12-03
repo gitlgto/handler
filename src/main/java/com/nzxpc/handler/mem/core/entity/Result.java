@@ -21,4 +21,8 @@ public class Result {
         this.ok = ok;
         this.msg = msg;
     }
+
+    public Result(boolean ok) {
+        this.ok = ok;
+    }
 }
