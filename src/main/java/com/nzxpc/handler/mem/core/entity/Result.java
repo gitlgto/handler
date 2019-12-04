@@ -25,4 +25,8 @@ public class Result {
     public Result(boolean ok) {
         this.ok = ok;
     }
+
+    public static Result err(String msg) {
+        return new Result(false, msg);
+    }
 }

@@ -38,7 +38,7 @@ public class WebExceptionHandler {
         String message = fieldError == null ? "未知错误" : fieldError.getDefaultMessage();
         if (StringUtils.isNotBlank(message) && message.contains("{display}")) {
             if (target == null) {
-                return dealReturn(new Result(false, "未知错误"));
+                return dealReturn(Result.err("未知错误"));
             }
             try {
                 String property = fieldError.getField();
