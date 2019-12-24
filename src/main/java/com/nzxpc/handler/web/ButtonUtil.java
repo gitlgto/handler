@@ -148,7 +148,7 @@ public class ButtonUtil {
         //找实现controllerInterface的接口的类
         List<Class<?>> beanClasses = scanPackage(new AssignableTypeFilter(ControllerInterface.class), arr);
         for (Class<?> beanClass : beanClasses) {
-            String ctlUrl = StringUtils.uncapitalize(beanClass.getSimpleName().replace("controller", ""));
+            String ctlUrl = StringUtils.uncapitalize(beanClass.getSimpleName().replace("Controller", ""));
             Method[] methods = beanClass.getMethods();
             for (Method method : methods) {
                 int md = method.getModifiers();
